@@ -1,0 +1,21 @@
+# Robots.txt pour Maroc Inflation
+# Site d'analyse de l'inflation au Maroc
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: http://localhost:8000/sitemap.xml.php
+
+# Désactiver crawl des dossiers privés
+Disallow: /includes/
+Disallow: /data/
+Disallow: /sql/
+Disallow: /logs/
+Disallow: /vendor/
+
+# Autoriser les APIs publiques
+Allow: /api/
+
+# Crawl-delay (optionnel, en secondes)
+Crawl-delay: 1

@@ -1,0 +1,41 @@
+name: PHP CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run lint & smoke tests (sans DB)
+        run: bash tests/run.sh
+        env:
+          CHECK_DB: 0
+
+      - name: Smoke tests avec DB
+        if: env.DB_HOST != '' && env.DB_USER != '' && env.DB_NAME != ''
+        run: CHECK_DB=1 php tests/smoke.php
+        env:
+          DB_HOST: ${{ env.DB_HOST }}
+          DB_NAME: ${{ env.DB_NAME }}
+          DB_USER: ${{ env.DB_USER }}
+          DB_PASS: ${{ env.DB_PASS }}

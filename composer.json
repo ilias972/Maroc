@@ -1,0 +1,17 @@
+{
+    "name": "maroc-inflation/site",
+    "description": "Site de suivi de l'inflation au Maroc",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "ext-mysqli": "*",
+        "ext-pdo": "*",
+        "mpdf/mpdf": "^8.2",
+        "phpoffice/phpspreadsheet": "^1.29"
+    },
+    "autoload": {
+        "psr-4": {
+            "MarocInflation\\": "includes/"
+        }
+    }
+}

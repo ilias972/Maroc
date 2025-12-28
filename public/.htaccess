@@ -1,0 +1,13 @@
+# Bloquer l'accès direct aux anciens noms
+<Files "admin_*.php">
+    Require all denied
+</Files>
+
+# Autoriser la nouvelle URL
+<Files "secure-access-xyz2024.php">
+    Require all granted
+</Files>
+
+<Files "secure-logout-xyz2024.php">
+    Require all granted
+</Files>

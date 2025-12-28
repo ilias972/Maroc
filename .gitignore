@@ -1,0 +1,9 @@
+vendor/
+.env
+*.log
+.DS_Store
+.vscode/
+backups/*.zip
+backups/*.sql
+logs/*.log
+node_modules/
