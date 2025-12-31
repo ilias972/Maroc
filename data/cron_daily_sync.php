@@ -112,6 +112,28 @@ if ($dayOfWeek === 1) {
     ];
 }
 
+// News Scraping (quotidien)
+$statuses[] = [
+    'label' => 'News HCP',
+    'success' => runJob('News HCP', 'php ' . __DIR__ . '/scrape_news_hcp.php'),
+    'message' => ''
+];
+
+$statuses[] = [
+    'label' => 'News Bank Al-Maghrib',
+    'success' => runJob('News Bank Al-Maghrib', 'php ' . __DIR__ . '/scrape_news_bam.php'),
+    'message' => ''
+];
+
+// Calcul Prévisions (lundi uniquement - après import des données)
+if ($dayOfWeek === 1) {
+    $statuses[] = [
+        'label' => 'Calcul Prévisions',
+        'success' => runJob('Calcul Prévisions', 'php ' . __DIR__ . '/calculate_previsions.php'),
+        'message' => ''
+    ];
+}
+
 logSync("═══════════════════════════════════════════");
 logSync("  FIN - " . date('H:i:s'));
 logSync("═══════════════════════════════════════════\n");
