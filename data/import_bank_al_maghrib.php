@@ -11,7 +11,7 @@ require_once __DIR__ . '/../includes/database.php';
 class BankAlMaghribImporter {
 
     private $db;
-    private $api_key = 'a53824b98185450f9adb4e637194c7a0';
+    private $api_key;
     private $base_url = 'https://apihelpdesk.centralbankofmorocco.ma/BAM/CoursChange/api/CoursChange';
 
     private $stats = [
@@ -22,6 +22,13 @@ class BankAlMaghribImporter {
 
     public function __construct($database) {
         $this->db = $database;
+
+        // Charger la clé API depuis .env
+        $this->api_key = $_ENV['BAM_API_KEY'] ?? getenv('BAM_API_KEY');
+
+        if (!$this->api_key) {
+            throw new Exception('BAM_API_KEY non configurée dans .env');
+        }
     }
 
     /**

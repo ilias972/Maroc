@@ -13,25 +13,6 @@ CREATE TABLE IF NOT EXISTS inflation_internationale (
     INDEX idx_date (annee, mois)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insérer quelques pays de référence
-INSERT IGNORE INTO inflation_internationale (pays, code_pays, annee, mois, inflation_annuelle) VALUES
--- France (données exemple - à remplacer par vraies données)
-('France', 'FRA', 2024, 12, 1.3),
-('France', 'FRA', 2024, 11, 1.4),
-('France', 'FRA', 2024, 10, 1.5),
--- Espagne
-('Espagne', 'ESP', 2024, 12, 2.8),
-('Espagne', 'ESP', 2024, 11, 2.9),
-('Espagne', 'ESP', 2024, 10, 3.0),
--- Algérie
-('Algérie', 'DZA', 2024, 12, 4.5),
-('Algérie', 'DZA', 2024, 11, 4.6),
-('Algérie', 'DZA', 2024, 10, 4.7),
--- Tunisie
-('Tunisie', 'TUN', 2024, 12, 6.2),
-('Tunisie', 'TUN', 2024, 11, 6.3),
-('Tunisie', 'TUN', 2024, 10, 6.4),
--- Allemagne
-('Allemagne', 'DEU', 2024, 12, 2.2),
-('Allemagne', 'DEU', 2024, 11, 2.3),
-('Allemagne', 'DEU', 2024, 10, 2.4);
+-- Les données d'inflation internationale doivent être importées depuis World Bank API
+-- Utiliser: php data/import_world_bank.php
+-- Pas de données d'exemple mockées ici
