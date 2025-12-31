@@ -78,10 +78,10 @@ echo "Import des schémas SQL..."
 for sql_file in sql/*.sql; do
     if [ -f "$sql_file" ]; then
         echo "  → $(basename $sql_file)"
-        $MYSQL_CMD maroc_inflation < "$sql_file"
+        $MYSQL_CMD maroc_inflation < "$sql_file" 2>&1 | grep -v "Duplicate entry" | grep -v "ERROR 1062" || true
     fi
 done
-success "Tous les schémas importés"
+success "Tous les schémas importés (doublons ignorés)"
 echo ""
 
 # Étape 3 : Vérifier le fichier .env
