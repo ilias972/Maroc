@@ -87,12 +87,12 @@ $stats = ['demo' => 0, 'ipc' => 0];
 foreach ($villes_demo as $ville => $demo) {
     // 1. Démographie
     $sql_demo = "INSERT INTO demographie_villes
-                 (ville, region, population, latitude, longitude, updated_at)
-                 VALUES (?, ?, ?, ?, ?, NOW())
+                 (ville, region, population, latitude, longitude, annee_donnees, source)
+                 VALUES (?, ?, ?, ?, ?, 2024, 'HCP-RGPH')
                  ON DUPLICATE KEY UPDATE
                  region = VALUES(region),
                  population = VALUES(population),
-                 updated_at = NOW()";
+                 source = VALUES(source)";
 
     $stmt = $conn->prepare($sql_demo);
     $stmt->bind_param('ssidd', $ville, $demo['region'], $demo['pop'], $demo['lat'], $demo['lon']);
@@ -105,11 +105,11 @@ foreach ($villes_demo as $ville => $demo) {
             $inflation = $ipc_data[$ville];
 
             $sql_ipc = "INSERT INTO ipc_villes
-                        (ville, annee, mois, inflation_value, source, updated_at)
-                        VALUES (?, 2024, 12, ?, 'HCP', NOW())
+                        (ville, annee, mois, inflation_value, source)
+                        VALUES (?, 2024, 12, ?, 'HCP-Scraping')
                         ON DUPLICATE KEY UPDATE
                         inflation_value = VALUES(inflation_value),
-                        updated_at = NOW()";
+                        source = VALUES(source)";
 
             $stmt = $conn->prepare($sql_ipc);
             $stmt->bind_param('sd', $ville, $inflation);
