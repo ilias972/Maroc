@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </li>
         <li>
             <i class="fas fa-check text-success me-2"></i>
-            <strong>Taux de Change :</strong> Bank Al-Maghrib (API officielle)
+            <strong>Taux de Change :</strong> ExchangeRate-API (temps réel)
         </li>
         <li>
             <i class="fas fa-check text-success me-2"></i>

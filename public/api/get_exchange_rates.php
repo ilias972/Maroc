@@ -44,7 +44,7 @@ try {
             'eur' => $eur_taux,
             'autres' => $autres_taux
         ],
-        'source' => 'Bank Al-Maghrib',
+        'source' => 'ExchangeRate-API',
         'derniere_maj' => date('Y-m-d H:i:s')
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 

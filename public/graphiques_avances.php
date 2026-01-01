@@ -219,7 +219,7 @@ require_once '../includes/header.php';
                         <div class="col-md-4 text-end">
                             <small class="text-muted">
                                 <i class="fas fa-database me-1"></i>
-                                Sources : HCP, Bank Al-Maghrib
+                                Sources : HCP, ExchangeRate-API
                             </small>
                         </div>
                     </div>
@@ -247,7 +247,7 @@ require_once '../includes/header.php';
                 <p class="mb-0 small text-muted">
                     <i class="fas fa-info-circle me-1"></i>
                     Certaines données sont indicatives et doivent être mises à jour avec les publications officielles
-                    du HCP, Bank Al-Maghrib, Office des Changes et Banque Mondiale.
+                    du HCP, ExchangeRate-API, Office des Changes et Banque Mondiale.
                 </p>
             </div>
         </div>

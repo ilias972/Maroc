@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Taux de Change Officiels
         </h3>
         <p class="text-muted mb-4">
-            Source : Bank Al-Maghrib |
+            Source : ExchangeRate-API |
             Mise à jour : <?= date('d/m/Y') ?>
             <?php
             $dayOfWeek = date('N');
@@ -518,8 +518,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <?php endif; ?>
             </div>
             <div class="card-footer text-center small text-muted">
-                <i class="fas fa-university me-1"></i>
-                Bank Al-Maghrib
+                <i class="fas fa-globe me-1"></i>
+                ExchangeRate-API
             </div>
         </div>
     </div>
@@ -902,7 +902,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </li>
         <li>
             <i class="fas fa-check text-success me-2"></i>
-            <strong>Taux de Change :</strong> Bank Al-Maghrib (API officielle)
+            <strong>Taux de Change :</strong> ExchangeRate-API (temps réel)
         </li>
         <li>
             <i class="fas fa-check text-success me-2"></i>
