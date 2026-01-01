@@ -39,11 +39,20 @@ class BankAlMaghribImporter {
         echo "║   IMPORT BANK AL-MAGHRIB - TAUX CHANGE   ║\n";
         echo "╚═══════════════════════════════════════════╝\n\n";
 
-        // Trouver la dernière date ouvrée (pas week-end ni férié)
-        $date = $this->getLastWorkingDay();
-        echo "📅 Date : $date\n\n";
+        // Toujours essayer la date du jour
+        $date = date('Y-m-d');
+        $dayName = $this->getDayName($date);
+        echo "📅 Date : $date ($dayName)\n";
 
-        echo "→ Import cours billets (BBE)...\n";
+        // Vérifier si c'est un jour non ouvré
+        if ($this->isNonWorkingDay($date)) {
+            echo "⏸️  Marché fermé (week-end ou jour férié)\n";
+            echo "💾 Les dernières données en base seront utilisées\n\n";
+            $this->showLastRates();
+            return;
+        }
+
+        echo "\n→ Import cours billets (BBE)...\n";
         $this->importCoursBBE($date);
 
         echo "\n→ Import cours virements...\n";
@@ -53,23 +62,49 @@ class BankAlMaghribImporter {
     }
 
     /**
-     * Obtenir la dernière date ouvrée valide
+     * Obtenir le nom du jour
      */
-    private function getLastWorkingDay() {
-        $date = new DateTime();
-        $tries = 0;
-        $maxTries = 10; // Chercher jusqu'à 10 jours en arrière
+    private function getDayName($date) {
+        $days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        return $days[date('w', strtotime($date))];
+    }
 
-        while ($tries < $maxTries) {
-            if (!$this->isNonWorkingDay($date->format('Y-m-d'))) {
-                return $date->format('Y-m-d');
+    /**
+     * Afficher les derniers taux en base
+     */
+    private function showLastRates() {
+        $sql = "SELECT devise, cours_mad, date_taux,
+                DATE_FORMAT(date_taux, '%d/%m/%Y') as date_formatted,
+                DATE_FORMAT(updated_at, '%H:%i') as heure
+                FROM taux_change
+                WHERE date_taux = (SELECT MAX(date_taux) FROM taux_change)
+                LIMIT 5";
+
+        $result = $this->db->query($sql);
+
+        if ($result && $result->num_rows > 0) {
+            echo "╔═══════════════════════════════════════════╗\n";
+            echo "║     DERNIÈRES DONNÉES DISPONIBLES         ║\n";
+            echo "╚═══════════════════════════════════════════╝\n\n";
+
+            $first = $result->fetch_assoc();
+            echo "📆 Date : {$first['date_formatted']}\n";
+            echo "🕐 Mise à jour : {$first['heure']}\n\n";
+
+            // Afficher les premières devises
+            echo "Exemples : {$first['devise']} = {$first['cours_mad']} MAD\n";
+
+            // Réinitialiser le curseur
+            $result->data_seek(0);
+            while ($row = $result->fetch_assoc()) {
+                if ($row['devise'] != $first['devise']) {
+                    echo "           {$row['devise']} = {$row['cours_mad']} MAD\n";
+                }
             }
-            $date->modify('-1 day');
-            $tries++;
+        } else {
+            echo "⚠️  Aucune donnée en base. Lancez un import un jour ouvré.\n";
         }
-
-        // Fallback : retourner la date actuelle
-        return date('Y-m-d');
+        echo "\n";
     }
 
     /**

@@ -428,7 +428,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     foreach ($devises_principales as $devise) {
         $devise_var = $devise;
-        $sql = "SELECT cours_mad, date_taux FROM taux_change
+        $sql = "SELECT cours_mad, date_taux, updated_at,
+                DATE_FORMAT(updated_at, '%H:%i') as heure,
+                DAYNAME(date_taux) as jour_semaine
+                FROM taux_change
                 WHERE devise = ? AND type_taux = 'VIREMENT'
                 ORDER BY date_taux DESC LIMIT 1";
         $stmt = $conn->prepare($sql);
@@ -440,9 +443,18 @@ document.addEventListener('DOMContentLoaded', function() {
             $data = $result->fetch_assoc();
             $jours_ecart = (strtotime(date('Y-m-d')) - strtotime($data['date_taux'])) / 86400;
 
+            // Traduction jour de la semaine
+            $jours = [
+                'Monday' => 'Lundi', 'Tuesday' => 'Mardi', 'Wednesday' => 'Mercredi',
+                'Thursday' => 'Jeudi', 'Friday' => 'Vendredi', 'Saturday' => 'Samedi', 'Sunday' => 'Dimanche'
+            ];
+            $jour_fr = $jours[$data['jour_semaine']] ?? $data['jour_semaine'];
+
             $taux_devises[$devise] = [
                 'cours' => $data['cours_mad'],
                 'date' => $data['date_taux'],
+                'heure' => $data['heure'],
+                'jour_semaine' => $jour_fr,
                 'jours_ecart' => $jours_ecart
             ];
         } else {
@@ -481,17 +493,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <div class="mt-3">
                         <?php if ($taux['jours_ecart'] < 1): ?>
-                            <span class="badge bg-success">
-                                <i class="fas fa-check"></i> Aujourd'hui
+                            <span class="badge bg-success mb-1">
+                                <i class="fas fa-check"></i> Aujourd'hui <?= $taux['heure'] ?>
                             </span>
                         <?php elseif ($taux['jours_ecart'] <= 3): ?>
-                            <span class="badge bg-warning">
-                                <?= date('d/m/Y', strtotime($taux['date'])) ?>
+                            <span class="badge bg-warning mb-1">
+                                <i class="fas fa-clock"></i> <?= $taux['jour_semaine'] ?> <?= $taux['heure'] ?>
                             </span>
+                            <br>
+                            <small class="text-muted"><?= date('d/m/Y', strtotime($taux['date'])) ?></small>
                         <?php else: ?>
-                            <span class="badge bg-secondary">
-                                <?= date('d/m/Y', strtotime($taux['date'])) ?>
+                            <span class="badge bg-secondary mb-1">
+                                <i class="fas fa-calendar"></i> <?= $taux['jour_semaine'] ?> <?= $taux['heure'] ?>
                             </span>
+                            <br>
+                            <small class="text-muted"><?= date('d/m/Y', strtotime($taux['date'])) ?></small>
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
