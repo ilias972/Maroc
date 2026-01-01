@@ -39,13 +39,9 @@ class BankAlMaghribImporter {
         echo "║   IMPORT BANK AL-MAGHRIB - TAUX CHANGE   ║\n";
         echo "╚═══════════════════════════════════════════╝\n\n";
 
-        $date = date('Y-m-d');
+        // Trouver la dernière date ouvrée (pas week-end ni férié)
+        $date = $this->getLastWorkingDay();
         echo "📅 Date : $date\n\n";
-
-        if ($this->isNonWorkingDay($date)) {
-            echo "⏸️  Marché fermé (week-end ou jour férié)\n";
-            return;
-        }
 
         echo "→ Import cours billets (BBE)...\n";
         $this->importCoursBBE($date);
@@ -54,6 +50,26 @@ class BankAlMaghribImporter {
         $this->importCoursVirement($date);
 
         $this->showStats();
+    }
+
+    /**
+     * Obtenir la dernière date ouvrée valide
+     */
+    private function getLastWorkingDay() {
+        $date = new DateTime();
+        $tries = 0;
+        $maxTries = 10; // Chercher jusqu'à 10 jours en arrière
+
+        while ($tries < $maxTries) {
+            if (!$this->isNonWorkingDay($date->format('Y-m-d'))) {
+                return $date->format('Y-m-d');
+            }
+            $date->modify('-1 day');
+            $tries++;
+        }
+
+        // Fallback : retourner la date actuelle
+        return date('Y-m-d');
     }
 
     /**
@@ -159,22 +175,71 @@ class BankAlMaghribImporter {
 
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
         curl_close($ch);
 
         if ($http_code === 200 && $response) {
-            return json_decode($response, true);
+            $data = json_decode($response, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $data;
+            } else {
+                echo "  ⚠️  Erreur JSON: " . json_last_error_msg() . "\n";
+                return null;
+            }
         }
 
-        echo "  ⚠️  HTTP $http_code\n";
+        echo "  ⚠️  HTTP $http_code";
+        if ($curl_error) {
+            echo " - $curl_error";
+        }
+        echo "\n";
+
+        // Afficher la réponse si elle existe (peut contenir des infos utiles)
+        if ($response && strlen($response) < 500) {
+            echo "  📝 Réponse: " . substr($response, 0, 200) . "\n";
+        }
+
         return null;
     }
 
     /**
-     * Vérifier jour non ouvré
+     * Vérifier jour non ouvré (week-end + jours fériés marocains)
      */
     private function isNonWorkingDay($date) {
-        $dayOfWeek = date('N', strtotime($date));
-        return $dayOfWeek >= 6;
+        $timestamp = strtotime($date);
+        $dayOfWeek = date('N', $timestamp);
+
+        // Week-end (samedi-dimanche)
+        if ($dayOfWeek >= 6) {
+            return true;
+        }
+
+        // Jours fériés fixes au Maroc
+        $year = date('Y', $timestamp);
+        $month = date('m', $timestamp);
+        $day = date('d', $timestamp);
+
+        $fixedHolidays = [
+            '01-01', // Nouvel An
+            '01-11', // Manifeste de l'Indépendance
+            '05-01', // Fête du Travail
+            '07-30', // Fête du Trône
+            '08-14', // Journée Oued Eddahab
+            '08-20', // Révolution du Roi et du Peuple
+            '08-21', // Fête de la Jeunesse
+            '11-06', // Marche Verte
+            '11-18', // Fête de l'Indépendance
+        ];
+
+        $dateKey = $month . '-' . $day;
+        if (in_array($dateKey, $fixedHolidays)) {
+            return true;
+        }
+
+        // Note: Jours fériés religieux (Aid, Mouled, etc.) varient chaque année
+        // et nécessiteraient un calendrier hijri. Pour l'instant, on gère uniquement les fixes.
+
+        return false;
     }
 
     /**
