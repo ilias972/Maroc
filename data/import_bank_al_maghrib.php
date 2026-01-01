@@ -12,7 +12,7 @@ class BankAlMaghribImporter {
 
     private $db;
     private $api_key;
-    private $base_url = 'https://apihelpdesk.centralbankofmorocco.ma/BAM/CoursChange/api/CoursChange';
+    private $base_url = 'https://api.centralbankofmorocco.ma/cours/Version1/api';
 
     private $stats = [
         'imported' => 0,
@@ -111,8 +111,8 @@ class BankAlMaghribImporter {
      * Importer cours billets de banque
      */
     private function importCoursBBE($date) {
-        $url = $this->base_url . '/GetCoursBBE';
-        $data = $this->makeRequest($url, ['dateValue' => $date]);
+        $url = $this->base_url . '/CoursBBE';
+        $data = $this->makeRequest($url, ['date' => $date]);
 
         if (!$data) {
             echo "  ❌ Erreur API BBE\n";
@@ -138,8 +138,8 @@ class BankAlMaghribImporter {
      * Importer cours virements
      */
     private function importCoursVirement($date) {
-        $url = $this->base_url . '/GetCoursVirement';
-        $data = $this->makeRequest($url, ['dateValue' => $date]);
+        $url = $this->base_url . '/CoursVirement';
+        $data = $this->makeRequest($url, ['date' => $date]);
 
         if (!$data) {
             echo "  ❌ Erreur API Virement\n";
@@ -193,15 +193,17 @@ class BankAlMaghribImporter {
      * Requête API avec authentification
      */
     private function makeRequest($url, $params = []) {
+        // Ajouter les paramètres en query string
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+
         $ch = curl_init($url);
 
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($params),
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
                 'Ocp-Apim-Subscription-Key: ' . $this->api_key,
                 'Accept: application/json'
             ],
