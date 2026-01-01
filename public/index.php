@@ -653,6 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             scales: {
                                 y: {
                                     beginAtZero: true,
+                                    suggestedMax: 3,
                                     ticks: {
                                         callback: function(value) {
                                             return value + '%';
