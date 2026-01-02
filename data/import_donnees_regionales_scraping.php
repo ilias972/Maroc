@@ -63,21 +63,28 @@ $villes_demo = [
 ];
 
 // Parser le HTML pour extraire les données IPC par ville
-// Format attendu : "Laâyoune (3.0%)", "Casablanca (0.8%)", etc.
-preg_match_all('/(\w[\w\s-]+?)\s*\((\d+[,.]?\d*)\s*%\)/u', $html, $matches, PREG_SET_ORDER);
+// Format HCP : "à Laâyoune avec 3,0%, à Guelmim avec 2,2%..."
+preg_match_all('/à\s+([A-ZÀ-ÿ][\wÀ-ÿ\s-]+?)\s+(?:et\s+([A-ZÀ-ÿ][\wÀ-ÿ\s-]+?)\s+)?avec\s+(\d+[,.]?\d*)\s*%/u', $html, $matches, PREG_SET_ORDER);
 
 $ipc_data = [];
 foreach ($matches as $match) {
-    $ville = trim($match[1]);
-    $inflation = floatval(str_replace(',', '.', $match[2]));
+    $inflation = floatval(str_replace(',', '.', end($match))); // Dernier élément = pourcentage
 
-    // Normaliser les noms de villes
-    $ville = str_replace(['Beni-Mellal', 'Béni Mellal', 'Beni Mellal'], 'Beni Mellal', $ville);
-    $ville = str_replace(['Laayoune', 'Laâyoune', 'Laayoune'], 'Laâyoune', $ville);
-    $ville = str_replace(['Al-hoceima', 'Al Hoceima', 'Al-Hoceima'], 'Al Hoceima', $ville);
+    // Extraire ville(s) - peut y avoir "Ville1 et Ville2 avec X%"
+    $texte_avant_avec = preg_split('/\s+avec\s+/u', $match[0])[0];
+    preg_match_all('/([A-ZÀ-ÿ][\wÀ-ÿ\s-]+?)(?:\s+et\s+|\s*,\s*|$)/u', $texte_avant_avec, $villes);
 
-    if ($inflation > 0 && $inflation < 20) { // Validation basique
-        $ipc_data[$ville] = $inflation;
+    foreach ($villes[1] as $ville) {
+        $ville = trim(str_replace('à', '', $ville));
+
+        // Normaliser les noms
+        $ville = str_replace(['Beni-Mellal', 'Béni Mellal'], 'Beni Mellal', $ville);
+        $ville = str_replace(['Laayoune'], 'Laâyoune', $ville);
+        $ville = str_replace(['Al-hoceima', 'Al-Hoceima'], 'Al Hoceima', $ville);
+
+        if (!empty($ville) && $inflation > 0 && $inflation < 20) {
+            $ipc_data[$ville] = $inflation;
+        }
     }
 }
 
