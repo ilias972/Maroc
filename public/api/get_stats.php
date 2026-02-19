@@ -5,11 +5,16 @@
  * Retour: JSON avec les statistiques calculées
  */
 
+require_once '../../includes/config.php';
+
+// CORRECTION CORS : N'autoriser que l'origine de l'application (pas d'étoile *)
+$allowed_origin = rtrim(SITE_URL, '/');
+if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] === $allowed_origin) {
+    header("Access-Control-Allow-Origin: " . $allowed_origin);
+}
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
-require_once '../../includes/config.php';
 require_once '../../includes/database.php';
 require_once '../../includes/functions.php';
 
@@ -96,9 +101,13 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
+    
+    // CORRECTION : Enregistrement de l'erreur côté serveur pour le débogage (ne pas exposer au client)
+    error_log("Erreur API get_stats.php : " . $e->getMessage());
+    
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Une erreur interne est survenue lors de la récupération des données.'
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 }
 ?>
