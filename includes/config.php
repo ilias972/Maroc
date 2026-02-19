@@ -3,19 +3,30 @@
  * Configuration générale du site Maroc Inflation
  */
 
-// Charger les variables d'environnement depuis .env
-if (file_exists(__DIR__ . '/../.env')) {
-    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+// Charger les variables d'environnement depuis .env (version améliorée)
+$env_file = __DIR__ . '/../.env';
+if (file_exists($env_file)) {
+    // Avertissement de sécurité si le fichier est accessible publiquement
+    if (isset($_SERVER['DOCUMENT_ROOT']) && strpos(realpath($env_file), realpath($_SERVER['DOCUMENT_ROOT'])) === 0) {
+        error_log("AVERTISSEMENT SÉCURITÉ : Le fichier .env est situé dans le répertoire web public !");
+    }
+
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
-            list($key, $value) = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value);
-            // Enlever les guillemets si présents
-            $value = trim($value, '"\'');
-            $_ENV[$key] = $value;
-            putenv("$key=$value");
+        $line = trim($line);
+        // Ignorer les commentaires complets et s'assurer qu'il y a un signe égal
+        if (strpos($line, '#') === 0 || strpos($line, '=') === false) {
+            continue;
         }
+        
+        list($key, $value) = explode('=', $line, 2);
+        $key = trim($key);
+        // Nettoyer la valeur (enlever les commentaires de fin de ligne et les guillemets)
+        $value = trim(explode('#', $value)[0]); 
+        $value = trim($value, '"\'');
+        
+        $_ENV[$key] = $value;
+        putenv("$key=$value");
     }
 }
 
