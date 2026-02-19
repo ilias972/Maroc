@@ -17,7 +17,7 @@ if ($auth->isAuthenticated()) {
 
 $error = '';
 $step = isset($_SESSION['pending_2fa_user_id']) ? 2 : 1;
-$code_2fa_dev = ''; // Pour affichage en dev
+$success_message = '';
 
 // Étape 1 : Login classique
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         if ($result['success'] && isset($result['require_2fa'])) {
             $step = 2;
-            $code_2fa_dev = $result['code_2fa']; // DEV UNIQUEMENT
+            $success_message = $result['message'];
         } elseif (!$result['success']) {
             $error = $result['error'];
         }
@@ -117,8 +117,14 @@ $conn->close();
                         </div>
                     <?php endif; ?>
 
+                    <?php if ($success_message): ?>
+                        <div class="alert alert-success">
+                            <i class="fas fa-envelope me-2"></i>
+                            <?= htmlspecialchars($success_message) ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if ($step === 1): ?>
-                        <!-- ÉTAPE 1 : Login -->
                         <form method="POST" action="">
                             <input type="hidden" name="action" value="login">
 
@@ -156,20 +162,11 @@ $conn->close();
                         </form>
 
                     <?php else: ?>
-                        <!-- ÉTAPE 2 : Vérification 2FA -->
                         <div class="text-center mb-4">
                             <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
                             <h4>Authentification à 2 Facteurs</h4>
-                            <p class="text-muted">Entrez le code de vérification</p>
+                            <p class="text-muted">Consultez votre boîte mail pour obtenir le code.</p>
                         </div>
-
-                        <?php if ($code_2fa_dev): ?>
-                            <div class="alert alert-warning">
-                                <strong>MODE DÉVELOPPEMENT :</strong><br>
-                                Votre code 2FA : <strong class="fs-3"><?= $code_2fa_dev ?></strong>
-                                <br><small>(En production, ce code serait envoyé par email)</small>
-                            </div>
-                        <?php endif; ?>
 
                         <form method="POST" action="">
                             <input type="hidden" name="action" value="verify_2fa">
